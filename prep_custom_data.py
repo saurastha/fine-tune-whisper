@@ -4,18 +4,17 @@ from datasets import Dataset, Audio, DatasetDict, concatenate_datasets, Value
 from tqdm import tqdm
 import argparse
 from pathlib import Path
+from utils import split_data
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--data_dir",
+                    default=None,
                     help="Root directory where the data lies.")
 
 parser.add_argument("--save_dir",
+                    default='data/',
                     help="Directory where the custom data is saved after processing.")
-
-parser.add_argument("--return_data",
-                    default=False,
-                    help="Only set to true when running the whole pipeline.")
 
 args = parser.parse_args()
 
@@ -23,10 +22,8 @@ DATA_PATH = Path(args.data_dir)
 
 SAVE_PATH = Path(args.save_dir)
 
-RETURN = Path(args.return_data)
 
-
-def prepare_data(data_path=DATA_PATH, save_path=SAVE_PATH, return_data=RETURN):
+def prepare_data(data_path=DATA_PATH, save_path=SAVE_PATH):
     data = DatasetDict({})
 
     directories = os.listdir(data_path)
@@ -67,7 +64,6 @@ def prepare_data(data_path=DATA_PATH, save_path=SAVE_PATH, return_data=RETURN):
 
         final_data = concatenate_datasets([data[dd] for dd in data])
 
-        final_data.save_to_disk(save_path)
+        train_test_val = split_data(final_data)
 
-        if return_data:
-            return final_data
+        train_test_val.save_to_disk(save_path)

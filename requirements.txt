@@ -1,0 +1,15 @@
+transformers
+pandas
+datasets
+evaluate
+jiwer
+gradio
+accelerate
+torch
+pydantic
+tqdm
+numpy
+librosa
+ensure
+python-box
+pytube
