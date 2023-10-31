@@ -16,7 +16,7 @@ def load_hf_data(hf_data_id, hf_data_config=None):
     return data
 
 
-def preprocess(data_path, processor, hf_data=True, hf_data_config=None):
+def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False):
     def prepare_dataset(example):
         audio = example['audio']
 
@@ -33,7 +33,7 @@ def preprocess(data_path, processor, hf_data=True, hf_data_config=None):
 
         return example
 
-    if hf_data:
+    if not is_custom_data:
         data = load_hf_data(data_path, hf_data_config)
     else:
         data = load_from_disk(data_path)
