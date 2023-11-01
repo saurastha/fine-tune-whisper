@@ -8,19 +8,22 @@ from utils import split_data
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--data_dir",
+parser.add_argument('--data_dir',
                     default=None,
-                    help="Root directory where the data lies.")
+                    help='Root directory where the data lies.')
 
-parser.add_argument("--save_dir",
+parser.add_argument('--save_dir',
                     default='data/',
-                    help="Directory where the custom data is saved after processing.")
+                    help='Directory where the custom data is saved after processing.')
 
 args = parser.parse_args()
 
 DATA_PATH = Path(args.data_dir)
 
 SAVE_PATH = Path(args.save_dir)
+
+if not os.path.exists(SAVE_PATH):
+    SAVE_PATH.mkdir(parents=True)
 
 
 def prepare_data(data_path=DATA_PATH, save_path=SAVE_PATH):
@@ -54,16 +57,20 @@ def prepare_data(data_path=DATA_PATH, save_path=SAVE_PATH):
                 if check_id in audios:
                     audio_transcript_map[check_id] = text
 
-            audio_dataset = Dataset.from_dict({"audio": [key for key, item in audio_transcript_map.items()],
-                                               "transcription": [item for key, item in audio_transcript_map.items()]})
+            audio_dataset = Dataset.from_dict({'audio': [key for key, item in audio_transcript_map.items()],
+                                               'transcription': [item for key, item in audio_transcript_map.items()]})
 
-            audio_dataset = audio_dataset.cast_column("audio", Audio(sampling_rate=16_000))
-            audio_dataset = audio_dataset.cast_column("transcription", Value("string"))
+            audio_dataset = audio_dataset.cast_column('audio', Audio(sampling_rate=16_000))
+            audio_dataset = audio_dataset.cast_column('transcription', Value('string'))
 
             data[fol.parts[-1]] = audio_dataset
 
         final_data = concatenate_datasets([data[dd] for dd in data])
 
-        train_test_val = split_data(final_data)
+        train_test_val = split_data(final_data, num_splits=3)
 
         train_test_val.save_to_disk(save_path)
+
+
+if __name__ == '__main__':
+    prepare_data()

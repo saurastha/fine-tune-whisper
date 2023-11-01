@@ -15,7 +15,7 @@ GREATER_IS_BETTER = False
 OPTIM = "adamw_bnb_8bit"
 
 # used when training strategy is epoch
-NUM_TRAIN_EPOCHS = 10
+NUM_TRAIN_EPOCHS = 1
 
 # used when training strategy is steps
 EVAL_STEPS = 10
