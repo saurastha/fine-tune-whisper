@@ -191,7 +191,6 @@ if args.training_strategy == 'epoch':
         load_best_model_at_end=LOAD_BEST_MODEL_AT_END,
         metric_for_best_model=METRIC_FOR_BEST_MODEL,
         greater_is_better=GREATER_IS_BETTER,
-        optim=OPTIM,
         resume_from_checkpoint=args.resume_from_ckpt,
     )
 
@@ -217,7 +216,6 @@ elif args.training_strategy == 'steps':
         load_best_model_at_end=LOAD_BEST_MODEL_AT_END,
         metric_for_best_model=METRIC_FOR_BEST_MODEL,
         greater_is_better=GREATER_IS_BETTER,
-        optim=OPTIM,
         resume_from_checkpoint=args.resume_from_ckpt,
     )
 
