@@ -1,10 +1,12 @@
 import os
 import torch
 import json
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 import evaluate
 import argparse
+from datasets import load_from_disk
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 from transformers import WhisperForConditionalGeneration
 from functools import partial
@@ -14,37 +16,41 @@ from constant import *
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--model",
-                    help="openai whisper model (tiny, small, medium..)")
+parser.add_argument('--model',
+                    help='openai whisper model (tiny, small, medium..)')
 
-parser.add_argument("--language",
-                    help="language that is to be fine-tuned")
+parser.add_argument('--language',
+                    help='language that is to be fine-tuned')
 
-parser.add_argument("--hf_data",
+parser.add_argument('--hf_data',
                     default=None,
-                    help="huggingface dataset id")
+                    help='huggingface dataset id')
 
-parser.add_argument("--hf_data_config",
+parser.add_argument('--hf_data_config',
                     default=None,
-                    help="like ne_np for nepali dataset in google/fleurs")
+                    help='like ne_np for nepali dataset in google/fleurs')
 
-parser.add_argument("--is_custom_data",
+parser.add_argument('--is_custom_data',
                     default=False,
-                    help="set to True if fine tune is to be done on custom data")
+                    help='set to True if fine tune is to be done on custom data')
 
-parser.add_argument("--custom_data_path",
+parser.add_argument('--custom_data_path',
                     default=None,
-                    help="path to custom data")
+                    help='Path to custom data')
 
-parser.add_argument("--output_dir",
-                    help="directory where the outputs like model checkpoint and training results are saved")
+parser.add_argument('--save_preprocessed_data',
+                    default=True,
+                    help='to save or not save the data after preprocessing. defaults to True')
 
-parser.add_argument("--training_strategy",
-                    help="steps or epochs")
+parser.add_argument('--output_dir',
+                    help='directory where the outputs like model checkpoint and training results are saved')
 
-parser.add_argument("--resume_from_ckpt",
+parser.add_argument('--training_strategy',
+                    help='steps or epoch')
+
+parser.add_argument('--resume_from_ckpt',
                     default=False,
-                    help="resume the training from the last saved checkpoint or not default=False")
+                    help='resume the training from the last saved checkpoint or not default=False')
 
 args = parser.parse_args()
 
@@ -60,10 +66,30 @@ model.generate = partial(
     model.generate, language=args.language, task="transcribe", use_cache=True
 )
 
-if not args.is_custom_data:
-    data = preprocess(data_path=args.hf_data, processor=processor, hf_data_config=args.hf_data_config)
+output_dir = Path(args.output_dir)
+
+if not os.path.exists(output_dir):
+    output_dir.mkdir()
 else:
-    data = preprocess(data_path=args.custom_data_path, processor=processor, is_custom_data=True)
+    print(f'Path {output_dir} already exists.')
+
+preprocessed_data_path = output_dir / 'preprocessed_data'
+
+if os.path.exists(preprocessed_data_path):
+    processed_data_size = round(os.path.getsize(preprocessed_data_path) / 1024)
+    if processed_data_size != 0:
+        print(f'\nProcessed data already exists of size: {processed_data_size}')
+
+    data = load_from_disk(str(preprocessed_data_path))
+
+else:
+    if not args.is_custom_data:
+        data = preprocess(data_path=args.hf_data, processor=processor, hf_data_config=args.hf_data_config)
+    else:
+        data = preprocess(data_path=args.custom_data_path, processor=processor, is_custom_data=True)
+
+    if args.save_preprocessed_data:
+        data.save_to_disk(preprocessed_data_path)
 
 
 def compute_metrics(pred):
@@ -145,7 +171,7 @@ class DataCollatorSpeechSeq2SeqWithPadding:
 
 data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
 
-if args.train_strategy == 'epoch':
+if args.training_strategy == 'epoch':
     training_args = Seq2SeqTrainingArguments(
         output_dir=args.output_dir,
         per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
@@ -169,7 +195,7 @@ if args.train_strategy == 'epoch':
         resume_from_checkpoint=args.resume_from_ckpt,
     )
 
-elif args.train_strategy == 'steps':
+elif args.training_strategy == 'steps':
     training_args = Seq2SeqTrainingArguments(
         output_dir=args.output_dir,
         per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
@@ -205,6 +231,12 @@ trainer = Seq2SeqTrainer(
     tokenizer=processor,
 )
 
+processor.save_pretrained(os.path.join(args.output_dir, 'whisper-processor'))
+
+print('TRAINING IN PROGRESS...')
+trainer.train()
+print('DONE TRAINING')
+
 results = []
 for obj in trainer.state.log_history:
     results.append(obj)
@@ -214,4 +246,4 @@ results_json = json.dumps(results)
 with open(f'{args.output_dir}/training_logs.json', 'w') as f:
     f.write(results_json)
 
-processor.save_pretrained(os.path.join(args.output_dir, 'whisper-processor'))
+
