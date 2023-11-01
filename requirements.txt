@@ -1,10 +1,10 @@
-transformers
+transformers==4.34.1
 pandas
-datasets
-evaluate
-jiwer
+datasets==2.14.6
+evaluate==0.4.1
+jiwer==3.0.3
 gradio
-accelerate
+accelerate==0.24.1
 torch
 pydantic
 tqdm
