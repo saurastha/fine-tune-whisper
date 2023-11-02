@@ -8,7 +8,7 @@ class SpeechSegment(BaseModel):
     hf_data: str | None
     hf_data_config: str | None
     is_custom_data: bool
-    custom_data_path: Path | None
+    custom_data_path: str | None
     prepare_custom_data: bool
     save_preprocessed_data: bool
     output_dir: Path

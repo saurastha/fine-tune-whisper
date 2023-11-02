@@ -51,7 +51,8 @@ try:
         hf_data=arguments.hf_data,
         hf_data_config=arguments.hf_data_config,
         is_custom_data=arguments.is_custom_data,
-        custom_data_path=Path(arguments.custom_data_path),
+        custom_data_path=arguments.custom_data_path,
+        prepare_custom_data=arguments.prepare_custom_data,
         save_preprocessed_data=arguments.save_preprocessed_data,
         output_dir=Path(arguments.output_dir),
         training_strategy=arguments.training_strategy)
