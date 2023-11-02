@@ -28,6 +28,10 @@ parser.add_argument('--custom_data_path',
                     default=None,
                     help='Path to custom data')
 
+parser.add_argument('--prepare_custom_data',
+                    default=False,
+                    help='set to True if the data is raw default: False')
+
 parser.add_argument('--save_preprocessed_data',
                     default=True,
                     help='to save or not save the data after preprocessing. defaults to True')

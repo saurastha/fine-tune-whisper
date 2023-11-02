@@ -118,11 +118,11 @@ def train(args):
 
     else:
         if not args.is_custom_data:
-            data = preprocess(data_path=args.hf_data, hf_data_config=args.hf_data_config, processor=processor, )
+            data = preprocess(data_path=args.hf_data, hf_data_config=args.hf_data_config, processor=processor)
         else:
             custom_data_save_path = args.output_dir / 'custom_data'
             data = preprocess(data_path=args.custom_data_path, processor=processor, is_custom_data=True,
-                              custom_data_save_path=custom_data_save_path)
+                              prepare_custom_data=args.prepare_custom_data, custom_data_save_path=custom_data_save_path)
 
         if args.save_preprocessed_data:
             create_directories([preprocessed_data_path])
