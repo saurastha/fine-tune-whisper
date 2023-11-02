@@ -18,6 +18,7 @@ def load_hf_data(hf_data_id, hf_data_config=None):
 
 
 def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, custom_data_save_path=None):
+    print('######### Data Preprocessing Started #########')
     def prepare_dataset(example):
         audio = example['audio']
 
@@ -81,6 +82,8 @@ def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, 
         is_label_length_in_range,
         input_columns=['label_length'],
     )
+
+    print('######### Data Preprocessing Finished #########')
 
     return data
 

@@ -189,9 +189,9 @@ def train(args):
 
     processor.save_pretrained(os.path.join(args.output_dir, 'whisper-processor'))
 
-    print('TRAINING IN PROGRESS...')
+    print('Training in progress......')
     trainer.train()
-    print('DONE TRAINING')
+    print('######### Training Completed #########')
 
     results = []
     for obj in trainer.state.log_history:
@@ -201,3 +201,5 @@ def train(args):
 
     with open(f'{args.output_dir}/training_logs.json', 'w') as f:
         f.write(results_json)
+
+    print(f'Outputs saved to {args.output_dir}')
