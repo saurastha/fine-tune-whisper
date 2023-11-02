@@ -105,7 +105,7 @@ def train(args):
         model.generate, language=args.language, task="transcribe", use_cache=True
     )
 
-    create_directories(args.output_dir)
+    create_directories([args.output_dir])
 
     preprocessed_data_path = args.output_dir / 'preprocessed_data'
 
@@ -125,6 +125,7 @@ def train(args):
                               custom_data_save_path=custom_data_save_path)
 
         if args.save_preprocessed_data:
+            create_directories([preprocessed_data_path])
             data.save_to_disk(preprocessed_data_path)
 
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)

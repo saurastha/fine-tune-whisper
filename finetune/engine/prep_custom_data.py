@@ -6,17 +6,20 @@ import argparse
 from pathlib import Path
 from finetune.utils.functions import split_data, create_directories
 
-parser = argparse.ArgumentParser()
 
-parser.add_argument('--data_dir',
-                    default=None,
-                    help='Root directory where the data lies.')
+def get_args():
+    parser = argparse.ArgumentParser()
 
-parser.add_argument('--save_dir',
-                    default='data/',
-                    help='Directory where the custom data is saved after processing.')
+    parser.add_argument('--data_dir',
+                        default=None,
+                        help='Root directory where the data lies.')
 
-args = parser.parse_args()
+    parser.add_argument('--save_dir',
+                        default='data/',
+                        help='Directory where the custom data is saved after processing.')
+
+    args = parser.parse_args()
+    return args
 
 
 def prepare_custom_data(data_path, save_path):
@@ -63,7 +66,7 @@ def prepare_custom_data(data_path, save_path):
 
         train_test_val = split_data(final_data, num_splits=3)
 
-        create_directories(save_path)
+        create_directories([save_path])
 
         train_test_val.save_to_disk(save_path)
 
@@ -74,4 +77,5 @@ def prepare_custom_data(data_path, save_path):
 
 
 if __name__ == '__main__':
+    args = get_args()
     _ = prepare_custom_data(data_path=args.data_dir, save_path=args.save_dir)
