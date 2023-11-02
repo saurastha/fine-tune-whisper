@@ -1,6 +1,6 @@
 from datasets import Audio, load_dataset, load_from_disk
-from utils import split_data
-from typing import List
+from finetune.utils.functions import split_data
+from finetune.constant.training_args import *
 
 
 def load_hf_data(hf_data_id, hf_data_config=None):
@@ -85,8 +85,8 @@ def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False):
 
 
 def is_audio_in_length_range(length):
-    return length < 30
+    return length < MAX_AUDIO_LENGTH
 
 
 def is_label_length_in_range(length):
-    return length < 448
+    return length < MAX_LABEL_LENGTH

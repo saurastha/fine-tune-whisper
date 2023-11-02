@@ -1,3 +1,4 @@
+# Hyperparameters
 PER_DEVICE_TRAIN_BATCH_SIZE = 16
 GRADIENT_ACCUMULATION_STEPS = 1
 LEARNING_RATE = 1e-5
@@ -13,6 +14,7 @@ LOAD_BEST_MODEL_AT_END = True
 METRIC_FOR_BEST_MODEL = 'wer'
 GREATER_IS_BETTER = False
 OPTIM = "adamw_bnb_8bit"
+RESUME_FROM_CHECKPOINT = False
 
 # used when training strategy is epoch
 NUM_TRAIN_EPOCHS = 10
@@ -21,4 +23,9 @@ NUM_TRAIN_EPOCHS = 10
 EVAL_STEPS = 10
 SAVE_STEPS = 10
 MAX_STEPS = 100
+
+
+# constant for preprocessing data
+MAX_AUDIO_LENGTH = 30.0
+MAX_LABEL_LENGTH = 448 # it is default for whisper models
 
