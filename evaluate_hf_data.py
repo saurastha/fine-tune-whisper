@@ -3,7 +3,9 @@ import re
 import glob
 import argparse
 import pandas as pd
+import torch
 import evaluate
+from datasets import load_dataset, Audio
 from transformers import pipeline
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
@@ -19,6 +21,10 @@ parser.add_argument('--hf_data',
                     default=None,
                     help='dataset name in of huggingface dataset')
 
+parser.add_argument('--split',
+                    default='test',
+                    help='split of data that is to be evaluated')
+
 parser.add_argument('--hf_data_config',
                     default=None,
                     help='like ne_np for nepali dataset in google/fleurs')
@@ -27,112 +33,59 @@ parser.add_argument('--task',
                     default='transcribe',
                     help='task to evaluate the data on (like transcribe, translate)')
 
-parser.add_argument('--is_custom_data',
-                    default=False,
-                    help='set to True if fine tune is to be done on custom data')
+# parser.add_argument('--output_dir',
+#                     help='directory where the evaluation result is saved')
 
-parser.add_argument('--custom_data_path',
-                    default=None,
-                    help='Path to custom data')
+args = parser.parse_args()
 
 
-parser.add_argument('--output_dir',
-                    help='directory where the evaluation result is saved')
+def iter_data(dataset):
+    for i, item in enumerate(dataset):
+        yield item['audio']
 
-arguments = parser.parse_args()
 
-config = ConfigurationManager(train=False)
+BATCH_SIZE = 8
 
-eval_config = config.get_evaluation_config()
+device = 0 if torch.cuda.is_available() else -1
+pipe = pipeline("automatic-speech-recognition", model=args.model, chunk_length_s=30, device=device)
+pipe.model.config.forced_decoder_ids = pipe.tokenizer.get_decoder_prompt_ids(language=args.language, task="transcribe")
 
-logger.info('>>>>>>>> Getting Configurations <<<<<<<<')
-model_id = eval_config.model_path
-pipe = pipeline("automatic-speech-recognition", model=model_id, device_map='auto')
-wer_metric = load("wer")
+wer_metric = evaluate.load("wer")
 normalizer = BasicTextNormalizer()
 
-if pipe.device.type == 'cpu':
-    logger.info(f'Note: CPU is used for inference. {eval_config.task} may take longer time.')
+data = load_dataset(args.hf_data, args.hf_data_config, split=args.split)
+data = data.cast_column("audio", Audio(sampling_rate=16000))
 
+if 'sentence' in data[args.split].column_names:
+    data = data.rename_column('sentence', 'transcription')
+if 'text' in data[args.split].column_names:
+    data = data.rename_column('sentence', 'transcription')
+if 'transcript' in data[args.split].column_names:
+    data = data.rename_column('sentence', 'transcription')
+if 'normalized_text' in data[args.split].column_names:
+    data = data.rename_column('sentence', 'transcription')
 
-def download_audio(video: YouTube, save_path: str):
-    audio = video.streams.filter(only_audio=True).first()
-    audio.download(filename=save_path)
-    logger.info(f'Audio saved in {save_path}')
+references = data['transcription']
+norm_references = []
+predictions = []
+norm_predictions = []
 
+print('####### Evaluation Started #######')
 
-def get_caption(video: YouTube):
-    caption = video.captions['en']
-    caption_xml = caption.xml_captions
-    caption_str = xml_parser(caption_xml)
-    return caption_str
+for i, out in enumerate(pipe(iter_data(data), batch_size=BATCH_SIZE)):
+    predictions.append(out["text"])
+    norm_references.append(normalizer(references[i]))
+    norm_predictions.append(normalizer(out['text']))
 
+wer = wer_metric.compute(references=references, predictions=predictions) * 100
+norm_wer = wer_metric.compute(references=norm_references, predictions=norm_predictions) * 100
 
-def xml_parser(xml_file: ET) -> str:
-    # Parse the XML content
-    root = ET.fromstring(xml_file)
+result = (f'Dataset:{args.hf_data} Config:{args.hf_data_config} '
+          f'Split:{args.split} Results:WER: {wer} WER Normalised: {norm_wer}')
 
-    # Extract the values of the 'p' attribute
-    text_values = [p.text for p in root.findall('./body/p')]
-    text = ' '.join(text_values)
-    text = text.replace('"', '')
-    return text
+with open('evaluation_result.txt', 'w') as f:
+    f.write(result)
 
-
-def transcribe_speech(filepath):
-    output = pipe(
-        filepath,
-        generate_kwargs={
-            "task": eval_config.task,
-            "language": eval_config.language,
-        },  # update with the language you've fine-tuned on
-        chunk_length_s=30,
-        batch_size=8,
-    )
-    return output["text"]
-
-
-if not os.path.exists(eval_config.root_dir):
-    raise Exception("Folder not found: The specified folder for evaluation does not exist. "
-                    "Please check the path and ensure that the folder exists before trying to access it.")
-
-if not glob.glob('evaluation/*.csv'):
-    raise Exception('CSV File not found for evaluation.')
-else:
-    df = pd.read_csv(glob.glob('evaluation/*.csv')[0])
-
-urls = df['youtube_link'].tolist()
-
-audio_save_dir = str(eval_config.root_dir) + '/' + 'audios'
-if not os.path.exists(audio_save_dir):
-    create_directories([audio_save_dir])
-
-logger.info('>>>>>>>> Getting Audios <<<<<<<<')
-for url in urls:
-    try:
-        pattern = r'v=([A-Za-z0-9_-]+)'
-        found = re.search(pattern, url)
-        video_id = found.group(1)
-    except AttributeError:
-        video_id = url.split('/')[-1]
-
-    audio_save_path = str(audio_save_dir) + '/' + video_id + '.mp3'
-    video = YouTube(url)
-    download_audio(video=video, save_path=audio_save_path)
-    caption = get_caption(video=video)
-    norm_caption = normalizer(caption)
-
-    logger.info(f'>>>>>>>> Transcribing audio from url {url} <<<<<<<<')
-    prediction = transcribe_speech(audio_save_path)
-    norm_prediction = normalizer(prediction)
-
-    wer = wer_metric.compute(references=[norm_caption], predictions=[norm_prediction])
-
-    idx = df.index[df['youtube_link'].str.contains(video_id)].tolist()
-    df.loc[idx, 'actual_transcription'] = caption
-    df.loc[idx, 'predicted_transcription'] = prediction
-    df.loc[idx, 'WER'] = wer
-
-df.to_csv(f'{eval_config.root_dir}/result.csv', index=False)
-
-logger.info(f'Evaluation complete. Results save in {eval_config.root_dir}/result.csv')
+print('####### Evaluation Complete #######')
+print('####### Evaluation Result #######\n')
+print(result)
