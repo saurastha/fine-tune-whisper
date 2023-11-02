@@ -1,4 +1,36 @@
+import os
+from pathlib import Path
 from datasets import DatasetDict
+
+
+def create_directories(path_to_directories: list, verbose=True):
+    """
+    creates list of directories
+
+    Args:
+        path_to_directories (list): list of path of directories
+        verbose (bool, optional): ignore if multiple dirs is to be created. Defaults to False
+    """
+
+    for path in path_to_directories:
+        os.makedirs(path, exist_ok=True)
+        if verbose:
+            print(f'created directory at: {path}')
+
+
+def get_size(path: Path) -> float:
+    """
+    get size in KB
+
+    Args:
+        path (Path): path of the file
+
+    Returns:
+        str: size in KB
+    """
+
+    size_in_kb = round(os.path.getsize(path) / 1024)
+    return size_in_kb
 
 
 def split_data(data, num_splits: int, test_size: float = 0.05, val_size: float = 0.05):

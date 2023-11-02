@@ -1,4 +1,5 @@
-from datasets import Audio, load_dataset, load_from_disk
+from datasets import Audio, load_dataset
+from finetune.engine.prep_custom_data import prepare_custom_data
 from finetune.utils.functions import split_data
 from finetune.constant.training_args import *
 
@@ -16,7 +17,7 @@ def load_hf_data(hf_data_id, hf_data_config=None):
     return data
 
 
-def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False):
+def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, custom_data_save_path=None):
     def prepare_dataset(example):
         audio = example['audio']
 
@@ -34,9 +35,9 @@ def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False):
         return example
 
     if not is_custom_data:
-        data = load_hf_data(data_path, hf_data_config)
+        data = load_hf_data(hf_data_id=data_path, hf_data_config=hf_data_config)
     else:
-        data = load_from_disk(data_path)
+        data = prepare_custom_data(data_path=data_path, save_path=custom_data_save_path)
 
     if 'sentence' in data['train'].column_names:
         data = data.rename_column('sentence', 'transcription')

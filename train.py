@@ -1,4 +1,8 @@
 import argparse
+from pathlib import Path
+from pydantic import ValidationError
+from finetune.entity.speech import SpeechSegment
+from finetune.engine.trainer import train
 
 parser = argparse.ArgumentParser()
 
@@ -34,8 +38,24 @@ parser.add_argument('--output_dir',
 parser.add_argument('--training_strategy',
                     help='steps or epoch')
 
-parser.add_argument('--resume_from_ckpt',
-                    default=False,
-                    help='resume the training from the last saved checkpoint or not default=False')
+arguments = parser.parse_args()
 
-args = parser.parse_args()
+try:
+    args = SpeechSegment(
+        model=arguments.model,
+        language=arguments.language,
+        hf_data=arguments.hf_data,
+        hf_data_config=arguments.hf_data_config,
+        is_custom_data=arguments.is_custom_data,
+        custom_data_path=Path(arguments.custom_data_path),
+        save_preprocessed_data=arguments.save_preprocessed_data,
+        output_dir=Path(arguments.output_dir),
+        training_strategy=arguments.training_strategy)
+
+except ValidationError as e:
+    raise e
+
+
+train(args)
+
+

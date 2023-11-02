@@ -4,7 +4,7 @@ from datasets import Dataset, Audio, DatasetDict, concatenate_datasets, Value
 from tqdm import tqdm
 import argparse
 from pathlib import Path
-from finetune.utils.functions import split_data
+from finetune.utils.functions import split_data, create_directories
 
 parser = argparse.ArgumentParser()
 
@@ -19,7 +19,7 @@ parser.add_argument('--save_dir',
 args = parser.parse_args()
 
 
-def prepare_data(data_path, save_path):
+def prepare_custom_data(data_path, save_path):
     print('######## Preparing data ########')
     data = DatasetDict({})
 
@@ -63,8 +63,7 @@ def prepare_data(data_path, save_path):
 
         train_test_val = split_data(final_data, num_splits=3)
 
-        if not os.path.exists(save_path):
-            save_path.mkdir(parents=True)
+        create_directories(save_path)
 
         train_test_val.save_to_disk(save_path)
 
@@ -75,4 +74,4 @@ def prepare_data(data_path, save_path):
 
 
 if __name__ == '__main__':
-    _ = prepare_data(data_path=args.data_dir, save_path=args.save_dir)
+    _ = prepare_custom_data(data_path=args.data_dir, save_path=args.save_dir)

@@ -11,6 +11,7 @@ from datasets import load_from_disk
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer, WhisperProcessor, WhisperForConditionalGeneration
 
+from finetune.utils.functions import create_directories, get_size
 from finetune.engine.data_setup import preprocess
 from finetune.constant.training_args import *
 
@@ -60,8 +61,7 @@ class DataCollatorSpeechSeq2SeqWithPadding:
         return batch
 
 
-def train(model_id, language, hf_data, hf_data_config, is_custom_data, custom_data_path,
-          save_preprocessed_data, training_strategy, output_dir):
+def train(args):
     def compute_metrics(pred):
         pred_ids = pred.predictions
         label_ids = pred.label_ids
@@ -93,8 +93,8 @@ def train(model_id, language, hf_data, hf_data_config, is_custom_data, custom_da
 
         return {"wer_ortho": wer_ortho, "wer": wer}
 
-    model = WhisperForConditionalGeneration.from_pretrained(model_id)
-    processor = WhisperProcessor.from_pretrained(model_id, language=language, task='transcribe')
+    model = WhisperForConditionalGeneration.from_pretrained(args.model)
+    processor = WhisperProcessor.from_pretrained(args.model, language=args.language, task='transcribe')
     metric = evaluate.load('wer')
     normalizer = BasicTextNormalizer()
 
@@ -102,39 +102,36 @@ def train(model_id, language, hf_data, hf_data_config, is_custom_data, custom_da
 
     # set language and task for generation and re-enable cache
     model.generate = partial(
-        model.generate, language=language, task="transcribe", use_cache=True
+        model.generate, language=args.language, task="transcribe", use_cache=True
     )
 
-    output_dir = Path(output_dir)
+    create_directories(args.output_dir)
 
-    if not os.path.exists(output_dir):
-        output_dir.mkdir()
-    else:
-        print(f'Path {output_dir} already exists.')
-
-    preprocessed_data_path = output_dir / 'preprocessed_data'
+    preprocessed_data_path = args.output_dir / 'preprocessed_data'
 
     if os.path.exists(preprocessed_data_path):
-        processed_data_size = round(os.path.getsize(preprocessed_data_path) / 1024)
+        processed_data_size = get_size(preprocessed_data_path)
         if processed_data_size != 0:
             print(f'\nProcessed data already exists of size: {processed_data_size}')
 
         data = load_from_disk(str(preprocessed_data_path))
 
     else:
-        if not is_custom_data:
-            data = preprocess(data_path=hf_data, processor=processor, hf_data_config=hf_data_config)
+        if not args.is_custom_data:
+            data = preprocess(data_path=args.hf_data, hf_data_config=args.hf_data_config, processor=processor, )
         else:
-            data = preprocess(data_path=custom_data_path, processor=processor, is_custom_data=True)
+            custom_data_save_path = args.output_dir / 'custom_data'
+            data = preprocess(data_path=args.custom_data_path, processor=processor, is_custom_data=True,
+                              custom_data_save_path=custom_data_save_path)
 
-        if save_preprocessed_data:
+        if args.save_preprocessed_data:
             data.save_to_disk(preprocessed_data_path)
 
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
 
-    if training_strategy == 'epoch':
+    if args.training_strategy == 'epoch':
         training_args = Seq2SeqTrainingArguments(
-            output_dir=output_dir,
+            output_dir=args.output_dir,
             per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
             gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
             learning_rate=LEARNING_RATE,
@@ -155,9 +152,9 @@ def train(model_id, language, hf_data, hf_data_config, is_custom_data, custom_da
             resume_from_checkpoint=RESUME_FROM_CHECKPOINT,
         )
 
-    elif training_strategy == 'steps':
+    elif args.training_strategy == 'steps':
         training_args = Seq2SeqTrainingArguments(
-            output_dir=output_dir,
+            output_dir=args.output_dir,
             per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
             gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
             learning_rate=LEARNING_RATE,
@@ -190,7 +187,7 @@ def train(model_id, language, hf_data, hf_data_config, is_custom_data, custom_da
         tokenizer=processor,
     )
 
-    processor.save_pretrained(os.path.join(output_dir, 'whisper-processor'))
+    processor.save_pretrained(os.path.join(args.output_dir, 'whisper-processor'))
 
     print('TRAINING IN PROGRESS...')
     trainer.train()
@@ -202,5 +199,5 @@ def train(model_id, language, hf_data, hf_data_config, is_custom_data, custom_da
 
     results_json = json.dumps(results)
 
-    with open(f'{output_dir}/training_logs.json', 'w') as f:
+    with open(f'{args.output_dir}/training_logs.json', 'w') as f:
         f.write(results_json)
