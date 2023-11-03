@@ -176,6 +176,7 @@ def train(args):
             metric_for_best_model=METRIC_FOR_BEST_MODEL,
             greater_is_better=GREATER_IS_BETTER,
             resume_from_checkpoint=RESUME_FROM_CHECKPOINT,
+            use_cpu=True
         )
 
     trainer = Seq2SeqTrainer(
@@ -185,7 +186,7 @@ def train(args):
         eval_dataset=data["validation"],
         data_collator=data_collator,
         compute_metrics=compute_metrics,
-        tokenizer=processor,
+        tokenizer=processor
     )
 
     processor.save_pretrained(os.path.join(args.output_dir, 'whisper-processor'))

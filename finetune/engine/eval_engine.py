@@ -11,7 +11,9 @@ def iter_data(dataset):
 
 
 BATCH_SIZE = 8
-device = 0 if torch.cuda.is_available() else -1
+# device = 0 if torch.cuda.is_available() else -1
+
+device = -1
 
 
 def evaluate_model(model, language, task, data):

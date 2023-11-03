@@ -41,7 +41,8 @@ def transcribe_speech(filepath, pipe, task, language):
 
 if __name__ == '__main__':
     args = get_args()
-    device = 0 if torch.cuda.is_available() else -1
+    # device = 0 if torch.cuda.is_available() else -1
+    device = -1
 
     pipe = pipeline("automatic-speech-recognition", model=args.model, device=device)
 
