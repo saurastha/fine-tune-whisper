@@ -84,7 +84,8 @@ Sure, I've added the specific command for running the training pipeline in the "
 
    - `--training_strategy`: Set the training strategy, for example, `epoch`.
 
-   Adjust the command parameters to match your specific configuration and dataset.
+
+  Adjust the command parameters to match your specific configuration and dataset.
 
 6. Use the evaluation scripts (`evaluate_hf_data.py` and `evaluate_custom_data.py`) to assess the model's performance on the respective datasets.
 
