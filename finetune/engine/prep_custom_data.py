@@ -22,7 +22,7 @@ def get_args():
     return args
 
 
-def prepare_custom_data(data_path, save_path):
+def prepare_custom_data(data_path, save_path, eval=False):
     print('######## Preparing data ########')
     data = DatasetDict({})
 
@@ -41,7 +41,7 @@ def prepare_custom_data(data_path, save_path):
         folders = [item for item in audio_dir.iterdir() if item.parts[-1] in temp_fol]
 
         for fol in tqdm(folders):
-            audios = list(map(str, fol.glob('*.wav')))
+            audios = list(map(str, fol.glob('*.wav'))) + list(map(str, fol.glob('*.mp3')))
 
             # Get transcription
             transcript_path = transcript_dir / fol.parts[-1] / 'transcript.csv'
@@ -64,6 +64,8 @@ def prepare_custom_data(data_path, save_path):
 
         final_data = concatenate_datasets([data[dd] for dd in data])
 
+        if eval:
+            return final_data
 
         train_test_val = split_data(final_data, num_splits=3)
 
