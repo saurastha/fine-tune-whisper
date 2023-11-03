@@ -151,6 +151,7 @@ def train(args):
             metric_for_best_model=METRIC_FOR_BEST_MODEL,
             greater_is_better=GREATER_IS_BETTER,
             resume_from_checkpoint=RESUME_FROM_CHECKPOINT,
+            use_cpu=True
         )
 
     elif args.training_strategy == 'steps':
