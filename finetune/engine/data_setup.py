@@ -1,3 +1,4 @@
+from pathlib import Path
 from datasets import Audio, load_dataset, load_from_disk
 from finetune.engine.prep_custom_data import prepare_custom_data
 from finetune.utils.functions import split_data, get_size
@@ -41,7 +42,7 @@ def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, 
         data = load_hf_data(hf_data_id=data_path, hf_data_config=hf_data_config)
     else:
         if prep_custom_data:
-            data = prepare_custom_data(data_path=data_path, save_path=custom_data_save_path)
+            data = prepare_custom_data(data_path=Path(data_path), save_path=custom_data_save_path)
         else:
             data = load_from_disk(data_path)
 
