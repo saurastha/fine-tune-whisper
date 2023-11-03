@@ -54,7 +54,37 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
 
 4. Configure hyperparameters and other settings in the `constant` directory.
 
-5. Run the training pipeline using the `train.py` script. You can specify the dataset you want to use for fine-tuning (Hugging Face or custom) by modifying the script accordingly.
+5. Run the training pipeline using the `train.py` script.
+
+Sure, I've added the specific command for running the training pipeline in the "Getting Started" section as step number 5:
+
+5. Run the training pipeline using the following command:
+
+   ```bash
+   !python train.py --model openai/whisper-small --language nepali --hf_data google/fleurs --hf_data_config ne_np --is_custom_data False --custom_data_path None --prepare_custom_data False --save_preprocessed_data True --output_dir outputs/ --training_strategy epoch
+   ```
+
+   - `--model`: Specify the Whisper model architecture, for example, `openai/whisper-small`.
+
+   - `--language`: Set the language for fine-tuning, for example, `nepali`.
+
+   - `--hf_data`: Use Hugging Face's dataset, such as `google/fleurs`.
+
+   - `--hf_data_config`: Specify the dataset configuration for the chosen language, e.g., `ne_np`.
+
+   - `--is_custom_data`: Set to `False` to use Hugging Face data.
+
+   - `--custom_data_path`: Specify the path to your custom data if you are using custom data.
+
+   - `--prepare_custom_data`: Set to `False` if you don't need to prepare custom data.
+
+   - `--save_preprocessed_data`: Set to `True` to save preprocessed data.
+
+   - `--output_dir`: Specify the directory where the output will be saved, e.g., `outputs/`.
+
+   - `--training_strategy`: Set the training strategy, for example, `epoch`.
+
+   Adjust the command parameters to match your specific configuration and dataset.
 
 6. Use the evaluation scripts (`evaluate_hf_data.py` and `evaluate_custom_data.py`) to assess the model's performance on the respective datasets.
 

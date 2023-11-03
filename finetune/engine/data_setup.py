@@ -17,7 +17,7 @@ def load_hf_data(hf_data_id, hf_data_config=None):
     return data
 
 
-def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, prepare_custom_data=False,
+def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, prep_custom_data=False,
                custom_data_save_path=None):
     print('######### Data Preprocessing Started #########')
 
@@ -40,7 +40,7 @@ def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, 
     if not is_custom_data:
         data = load_hf_data(hf_data_id=data_path, hf_data_config=hf_data_config)
     else:
-        if prepare_custom_data:
+        if prep_custom_data:
             data = prepare_custom_data(data_path=data_path, save_path=custom_data_save_path)
         else:
             data = load_from_disk(data_path)
