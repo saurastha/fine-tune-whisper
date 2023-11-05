@@ -170,7 +170,7 @@ Each sub-folder within the "transcripts" directory contains a `transcript.csv` f
 This repository is provided under the MIT License. Please refer to the `LICENSE` file for more details.
 
 For more information on the Whisper ASR model, you can visit
-the [Facebook AI Whisper GitHub repository](https://github.com/facebookresearch/wav2letter/tree/master/recipes/whisper)
+the [Facebook AI Whisper GitHub repository](https://github.com/openai/whisper)
 for additional resources and documentation.
 
 If you encounter any issues or have questions, feel free to create an issue in this repository for support.
