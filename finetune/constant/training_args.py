@@ -1,31 +1,36 @@
+"""
+Hyperparameters and Constants
+
+This file contains hyperparameters and constants used for training and data preprocessing.
+"""
+
 # Hyperparameters
-PER_DEVICE_TRAIN_BATCH_SIZE = 16
-GRADIENT_ACCUMULATION_STEPS = 1
-LEARNING_RATE = 1e-5
-WARMUP_STEPS = 5
-GRADIENT_CHECKPOINTING = True
-FP16 = False
-SAVE_TOTAL_LIMIT = 1
-PER_DEVICE_EVAL_BATCH_SIZE = 16
-PREDICT_WITH_GENERATE = True
-GENERATION_MAX_LENGTH = 225
-LOGGING_STEPS = 5
-LOAD_BEST_MODEL_AT_END = True
-METRIC_FOR_BEST_MODEL = 'wer'
-GREATER_IS_BETTER = False
-OPTIM = "adamw_bnb_8bit"
-RESUME_FROM_CHECKPOINT = False
+PER_DEVICE_TRAIN_BATCH_SIZE: int = 16
+GRADIENT_ACCUMULATION_STEPS: int = 1
+LEARNING_RATE: float = 1e-5
+WARMUP_STEPS: int = 5
+GRADIENT_CHECKPOINTING: bool = True
+FP16: bool = False
+SAVE_TOTAL_LIMIT: int = 1
+PER_DEVICE_EVAL_BATCH_SIZE: int = 16
+PREDICT_WITH_GENERATE: bool = True
+GENERATION_MAX_LENGTH: int = 225
+LOGGING_STEPS: int = 5
+LOAD_BEST_MODEL_AT_END: bool = True
+METRIC_FOR_BEST_MODEL: str = 'wer'
+GREATER_IS_BETTER: bool = False
+OPTIM: str = "adamw_bnb_8bit"
+RESUME_FROM_CHECKPOINT: bool = False
 
-# used when training strategy is epoch
-NUM_TRAIN_EPOCHS = 10
+# Used when training strategy is 'epoch'
+NUM_TRAIN_EPOCHS: int = 10
 
-# used when training strategy is steps
-EVAL_STEPS = 10
-SAVE_STEPS = 10
-MAX_STEPS = 100
+# Used when training strategy is 'steps'
+EVAL_STEPS: int = 10
+SAVE_STEPS: int = 10
+MAX_STEPS: int = 100
 
-
-# constant for preprocessing data
-MAX_AUDIO_LENGTH = 30.0
-MAX_LABEL_LENGTH = 448 # it is default for whisper models
+# Constants for preprocessing data
+MAX_AUDIO_LENGTH: float = 30.0
+MAX_LABEL_LENGTH: int = 448  # Default value for whisper models
 

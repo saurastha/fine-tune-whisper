@@ -1,5 +1,41 @@
+"""
+Custom Data Preparation Script
+
+This script prepares custom audio and transcript data for further processing. It organizes audio files and their
+corresponding transcriptions into a dataset, performs data type conversions, and optionally splits the data into
+train, test, and validation sets.
+
+Usage:
+    python custom_data_prep.py --data_dir <data_directory> --save_dir <save_directory>
+
+Args:
+    --data_dir (str): Root directory where the data is located.
+    --save_dir (str): Directory where the processed data will be saved after processing.
+
+Note:
+    The script expects the 'data_dir' to contain 'audio' and 'transcript' directories,
+    as per the following directory structure:
+    data_dir/
+        ├── audio/
+        │   ├── collection_1/
+        │   │   ├── (audio files related to collection_1)
+        │   ├── collection_2/
+        │   │   ├── (audio files related to collection_2)
+        │   ├── collection_3/
+        │   │   ├── (audio files related to collection_3)
+        ├── transcripts/
+        │   ├── collection_1/
+        │   │   ├── transcript.csv (transcriptions for collection_1 audio)
+        │   ├── collection_2/
+        │   │   ├── transcript.csv (transcriptions for collection_2 audio)
+        │   ├── collection_3/
+        │   │   ├── transcript.csv (transcriptions for collection_3 audio)
+
+"""
+
 import os
 import pandas as pd
+from typing import Union
 from datasets import Dataset, Audio, DatasetDict, concatenate_datasets, Value
 from tqdm import tqdm
 import argparse
@@ -7,22 +43,40 @@ from pathlib import Path
 from finetune.utils.functions import split_data, create_directories
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
+    """
+        Parse command-line arguments and return them as a namespace.
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--data_dir',
                         default=None,
-                        help='Root directory where the data lies.')
+                        help='Specify the root directory where your data is located.')
 
     parser.add_argument('--save_dir',
                         default='data/',
-                        help='Directory where the custom data is saved after processing.')
+                        help='Choose the directory where the processed custom data will be saved.')
 
     args = parser.parse_args()
     return args
 
 
-def prepare_custom_data(data_path, save_path, eval=False):
+def prepare_custom_data(data_path: Path, save_path: Union[Path, None], eval: bool = False):
+    """
+        Prepare custom audio and transcript data for further processing.
+
+        Args:
+            data_path (Path): Root directory where the data is located.
+            save_path (Path): Directory where the processed data will be saved.
+            eval (bool): If True, return the final dataset without splitting.
+
+        Returns:
+            Dataset: The prepared dataset if eval is True, else splits the data and saves it.
+
+        Raises:
+            Exception: If the 'audio' and 'transcript' directories are not found.
+
+        """
     print('######## Preparing data ########')
     data = DatasetDict({})
 
@@ -36,7 +90,7 @@ def prepare_custom_data(data_path, save_path, eval=False):
         audio_dir = data_path / 'audio'
         transcript_dir = data_path / 'transcript'
 
-        # getting the common directories inside the audio and transcripts folder match
+        # Extracting the directories as per the custom data directory structure
         temp_fol = [item.parts[-1] for item in transcript_dir.iterdir()]
         folders = [item for item in audio_dir.iterdir() if item.parts[-1] in temp_fol]
 

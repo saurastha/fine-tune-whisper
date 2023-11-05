@@ -4,63 +4,73 @@ from pydantic import ValidationError
 from finetune.entity.speech import SpeechSegment
 from finetune.engine.trainer import train
 
-parser = argparse.ArgumentParser()
 
-parser.add_argument('--model',
-                    help='openai whisper model (tiny, small, medium..)')
+def main():
+    """
+        Fine-tunes a speech recognition model with the specified configuration.
+    """
+    parser = argparse.ArgumentParser()
 
-parser.add_argument('--language',
-                    help='language that is to be fine-tuned')
+    parser.add_argument('--model',
+                        help='Specify the Whisper model (e.g., tiny, small, medium) to be fine-tuned.')
 
-parser.add_argument('--hf_data',
-                    default=None,
-                    help='huggingface dataset id')
+    parser.add_argument('--language',
+                        help='Specify the target language for fine-tuning.')
 
-parser.add_argument('--hf_data_config',
-                    default=None,
-                    help='like ne_np for nepali dataset in google/fleurs')
+    parser.add_argument('--hf_dataset_id',
+                        default=None,
+                        help='Specify the Hugging Face dataset ID if using a pre-defined dataset available in Hugging '
+                             'Face hub.')
 
-parser.add_argument('--is_custom_data',
-                    default=False,
-                    help='set to True if fine tune is to be done on custom data')
+    parser.add_argument('--hf_dataset_config',
+                        default=None,
+                        help='Specify the configuration (e.g., ne_np) for specific datasets like Nepali in '
+                             'Google/fleurs.')
 
-parser.add_argument('--custom_data_path',
-                    default=None,
-                    help='Path to custom data')
+    parser.add_argument('--is_custom_audio_data',
+                        default=False,
+                        help='Set this flag to True if fine-tuning is to be performed on custom data.')
 
-parser.add_argument('--prepare_custom_data',
-                    default=False,
-                    help='set to True if the data is raw default: False')
+    parser.add_argument('--custom_audio_data_path',
+                        default=None,
+                        help='Specify the path to the custom data if using custom data for fine-tuning.')
 
-parser.add_argument('--save_preprocessed_data',
-                    default=True,
-                    help='to save or not save the data after preprocessing. defaults to True')
+    parser.add_argument('--prepare_custom_audio_data',
+                        default=False,
+                        help='Set this flag to True if the data is in raw format (i.e. the custom data is not '
+                             'converted to Hugging Face data). Default: False.')
 
-parser.add_argument('--output_dir',
-                    help='directory where the outputs like model checkpoint and training results are saved')
+    parser.add_argument('--save_preprocessed_data',
+                        default=True,
+                        help='Specify whether to save the preprocessed data. Defaults to True.')
 
-parser.add_argument('--training_strategy',
-                    help='steps or epoch')
+    parser.add_argument('--output_dir',
+                        help='Specify the directory where the model checkpoints, preprocessed data and training '
+                             'results will be saved.')
 
-arguments = parser.parse_args()
+    parser.add_argument('--training_strategy',
+                        help='Specify the training strategy (steps or epoch) for fine-tuning.')
 
-try:
-    args = SpeechSegment(
-        model=arguments.model,
-        language=arguments.language,
-        hf_data=arguments.hf_data,
-        hf_data_config=arguments.hf_data_config,
-        is_custom_data=arguments.is_custom_data,
-        custom_data_path=arguments.custom_data_path,
-        prepare_custom_data=arguments.prepare_custom_data,
-        save_preprocessed_data=arguments.save_preprocessed_data,
-        output_dir=Path(arguments.output_dir),
-        training_strategy=arguments.training_strategy)
+    arguments = parser.parse_args()
 
-except ValidationError as e:
-    raise e
+    try:
+        args = SpeechSegment(
+            model=arguments.model,
+            language=arguments.language,
+            hf_data=arguments.hf_data,
+            hf_data_config=arguments.hf_data_config,
+            is_custom_data=arguments.is_custom_data,
+            custom_data_path=arguments.custom_data_path,
+            prepare_custom_data=arguments.prepare_custom_data,
+            save_preprocessed_data=arguments.save_preprocessed_data,
+            output_dir=Path(arguments.output_dir),
+            training_strategy=arguments.training_strategy)
+
+    except ValidationError as e:
+        raise e
+
+    train(args)
 
 
-train(args)
-
-
+if __name__ == '__main__':
+    main()

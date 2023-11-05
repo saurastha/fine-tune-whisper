@@ -1,15 +1,32 @@
+"""
+Data Preprocessing Script
+
+This script contains functions for data preprocessing, including loading data,
+processing audio, and filtering based on length constraints.
+"""
+
 from pathlib import Path
-from datasets import Audio, load_dataset, load_from_disk
+from datasets import Audio, load_dataset, load_from_disk, Dataset
 from finetune.engine.prep_custom_data import prepare_custom_data
-from finetune.utils.functions import split_data, get_size
+from finetune.utils.functions import split_data
 from finetune.constant.training_args import *
 
 
-def load_hf_data(hf_data_id, hf_data_config=None):
-    if hf_data_config is not None:
-        data = load_dataset(hf_data_id, name=hf_data_config)
+def load_hf_data(hf_dataset_id: str, hf_dataset_config: str = None):
+    """
+        Load data from the Hugging Face Datasets library.
+
+        Args:
+            hf_dataset_id (str): Hugging Face dataset identifier.
+            hf_dataset_config (str): Hugging Face dataset configuration (if available).
+
+        Returns:
+            Dataset: The loaded dataset.
+        """
+    if hf_dataset_config is not None:
+        data = load_dataset(hf_dataset_id, name=hf_dataset_config)
     else:
-        data = load_dataset(hf_data_id)
+        data = load_dataset(hf_dataset_id)
 
     if 'validation' not in data:
         train_val = split_data(data['train'], num_splits=2)
@@ -18,8 +35,22 @@ def load_hf_data(hf_data_id, hf_data_config=None):
     return data
 
 
-def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, prep_custom_data=False,
-               custom_data_save_path=None):
+def preprocess(data_source: str, processor, hf_dataset_config: str = None, is_custom_audio_data: bool = False,
+               prepare_custom_audio_data: bool = False, custom_audio_data_save_path: Path = None) -> Dataset:
+    """
+        Preprocess data for training or evaluation.
+
+        Args:
+            data_source (str): Path to the data or Hugging Face dataset identifier.
+            processor: Data processor for audio and transcriptions.
+            hf_dataset_config (dict): Hugging Face dataset configuration (if available).
+            is_custom_audio_data (bool): True if the data is custom audio and transcript data.
+            prepare_custom_audio_data (bool): True if custom data should be prepared.
+            custom_audio_data_save_path (str): Path to save the custom data.
+
+        Returns:
+            Dataset: The preprocessed dataset.
+        """
     print('######### Data Preprocessing Started #########')
 
     def prepare_dataset(example):
@@ -38,13 +69,13 @@ def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, 
 
         return example
 
-    if not is_custom_data:
-        data = load_hf_data(hf_data_id=data_path, hf_data_config=hf_data_config)
+    if not is_custom_audio_data:
+        data = load_hf_data(hf_dataset_id=data_source, hf_dataset_config=hf_dataset_config)
     else:
-        if prep_custom_data:
-            data = prepare_custom_data(data_path=Path(data_path), save_path=custom_data_save_path)
+        if prepare_custom_audio_data:
+            data = prepare_custom_data(data_path=Path(data_source), save_path=custom_audio_data_save_path)
         else:
-            data = load_from_disk(data_path)
+            data = load_from_disk(data_source)
 
     if 'sentence' in data['train'].column_names:
         data = data.rename_column('sentence', 'transcription')
@@ -94,9 +125,27 @@ def preprocess(data_path, processor, hf_data_config=None, is_custom_data=False, 
     return data
 
 
-def is_audio_in_length_range(length):
+def is_audio_in_length_range(length: float) -> bool:
+    """
+        Check if audio length is within the specified range.
+
+        Args:
+            length (float): Audio length in seconds.
+
+        Returns:
+            bool: True if the audio length is within the range, otherwise False.
+        """
     return length < MAX_AUDIO_LENGTH
 
 
-def is_label_length_in_range(length):
+def is_label_length_in_range(length: int) -> bool:
+    """
+        Check if label length is within the specified range.
+
+        Args:
+            length (int): Label length.
+
+        Returns:
+            bool: True if the label length is within the range, otherwise False.
+        """
     return length < MAX_LABEL_LENGTH

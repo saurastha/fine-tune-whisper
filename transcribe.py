@@ -10,23 +10,35 @@ def get_args():
 
     parser.add_argument('--filepath',
                         nargs='+',
-                        help='list of filepath of the audio to be transcribed')
+                        help='List of filepaths of the audio to be transcribed')
 
     parser.add_argument('--model',
-                        help='openai whisper model (tiny, small, medium..) or local checkpoint')
+                        help='Specify the Whisper model (e.g., tiny, small, medium) or a local checkpoint.')
 
     parser.add_argument('--language',
-                        help='language that the audio contains')
+                        help='Specify the language that the audio contains.')
 
     parser.add_argument('--task',
                         default='transcribe',
-                        help='task that is to be performed')
+                        help='Specify the task to be performed (e.g., transcribe, translate).')
 
     args = parser.parse_args()
     return args
 
 
 def transcribe_speech(filepath, pipe, task, language):
+    """
+        Transcribe audio files using the specified pipeline.
+
+        Args:
+            filepath (str): Filepath of the audio to be transcribed.
+            pipe (pipeline): Hugging Face pipeline for automatic speech recognition.
+            task (str): The task to be performed.
+            language (str): The language contained in the audio.
+
+        Returns:
+            str: Transcribed text.
+        """
     output = pipe(
         filepath,
         generate_kwargs={

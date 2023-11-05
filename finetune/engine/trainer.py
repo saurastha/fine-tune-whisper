@@ -1,7 +1,6 @@
 import os
 import json
 import torch
-from pathlib import Path
 from functools import partial
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
@@ -100,7 +99,7 @@ def train(args):
 
     model.config.use_cache = False
 
-    # set language and task for generation and re-enable cache
+    # Set language and task for generation and re-enable cache
     model.generate = partial(
         model.generate, language=args.language, task="transcribe", use_cache=True
     )
@@ -109,6 +108,7 @@ def train(args):
 
     preprocessed_data_path = args.output_dir / 'preprocessed_data'
 
+    # Load preprocessed data if it exists
     if os.path.exists(preprocessed_data_path):
         processed_data_size = get_size(preprocessed_data_path)
         if processed_data_size != 0:
@@ -117,13 +117,19 @@ def train(args):
         data = load_from_disk(str(preprocessed_data_path))
 
     else:
-        if not args.is_custom_data:
-            data = preprocess(data_path=args.hf_data, hf_data_config=args.hf_data_config, processor=processor)
+        # Load Hugging Face dataset
+        if not args.is_custom_audio_data:
+            data = preprocess(data_source=args.hf_dataset_id,
+                              hf_dataset_config=args.hf_dataset_config,
+                              processor=processor)
         else:
+            # Load custom data
             custom_data_save_path = args.output_dir / 'custom_data'
-            print()
-            data = preprocess(data_path=args.custom_data_path, processor=processor, is_custom_data=True,
-                              prep_custom_data=args.prepare_custom_data, custom_data_save_path=custom_data_save_path)
+            data = preprocess(data_source=args.custom_audio_data_path,
+                              processor=processor,
+                              is_custom_audio_data=True,
+                              prepare_custom_audio_data=args.prepare_custom_audio_data,
+                              custom_audio_data_save_path=custom_data_save_path)
 
         if args.save_preprocessed_data:
             create_directories([preprocessed_data_path])
@@ -131,6 +137,7 @@ def train(args):
 
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
 
+    # Defining training arguments
     if args.training_strategy == 'epoch':
         training_args = Seq2SeqTrainingArguments(
             output_dir=args.output_dir,

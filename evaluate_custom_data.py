@@ -3,37 +3,40 @@ from datasets import load_from_disk
 from finetune.engine.prep_custom_data import prepare_custom_data
 from finetune.engine.eval_engine import evaluate_model
 
-parser = argparse.ArgumentParser()
 
-parser.add_argument('--model',
-                    help='openai whisper model (tiny, small, medium..)')
+def main():
+    """
+    Perform evaluation of a speech recognition model using specified parameters and data.
+    """
+    parser = argparse.ArgumentParser()
 
-parser.add_argument('--language',
-                    help='language that is to be fine-tuned')
+    parser.add_argument('--model',
+                        help='Specify the Whisper model (e.g., tiny, small, medium) for evaluation.')
 
-parser.add_argument('--task',
-                    default='transcribe',
-                    help='task to evaluate the data on (like transcribe, translate)')
+    parser.add_argument('--language',
+                        help='Specify the target language for evaluation.')
 
-parser.add_argument('--custom_data_path',
-                    default=None,
-                    help='dataset name in of huggingface dataset')
+    parser.add_argument('--task',
+                        default='transcribe',
+                        help='Specify the task to evaluate the data on (e.g., transcribe, translate).')
 
-parser.add_argument('--is_data_raw',
-                    default=True,
-                    help='set to False if the data is already converted to huggingface dataset and is saved on disk')
+    parser.add_argument('--custom_audio_data_path',
+                        help='Specify the path to custom data for evaluation.')
 
-parser.add_argument('--split',
-                    default='test',
-                    help='split of data that is to be evaluated. '
-                         'split is only taken into account when the data is already processed as huggingface dataset')
+    parser.add_argument('--prepare_custom_audio_data',
+                        default=True,
+                        help='Set to False if the data is already in Hugging Face dataset format and saved on disk. '
+                             'Default: True')
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-if args.is_data_raw:
-    data = prepare_custom_data(data_path=args.custom_data_path, save_path=None, eval=True)
-else:
-    data = load_from_disk(args.custom_data_path)
+    if args.is_data_prepare_custom_audio_dataraw:
+        data = prepare_custom_data(data_path=args.custom_audio_data_path, save_path=None, eval=True)
+    else:
+        data = load_from_disk(args.custom_data_path)
+
+    evaluate_model(model=args.model, language=args.language, task=args.task, data=data)
 
 
-evaluate_model(model=args.model, language=args.language, task=args.task, data=data)
+if __name__ == '__main__':
+    main()
