@@ -34,7 +34,7 @@ def main():
 
     args = parser.parse_args()
 
-    data = load_dataset(args.hf_data, args.hf_data_config, split=args.split)
+    data = load_dataset(args.hf_dataset_id, args.hf_dataset_config, split=args.split)
 
     evaluate_model(model=args.model, language=args.language, task=args.task, data=data)
 

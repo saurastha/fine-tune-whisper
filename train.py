@@ -57,11 +57,11 @@ def main():
         args = SpeechSegment(
             model=arguments.model,
             language=arguments.language,
-            hf_data=arguments.hf_data,
-            hf_data_config=arguments.hf_data_config,
-            is_custom_data=arguments.is_custom_data,
-            custom_data_path=arguments.custom_data_path,
-            prepare_custom_data=arguments.prepare_custom_data,
+            hf_dataset_id=arguments.hf_dataset_id,
+            hf_dataset_config=arguments.hf_dataset_config,
+            is_custom_audio_data=arguments.is_custom_audio_data,
+            custom_audio_data_path=arguments.custom_audio_data_path,
+            prepare_custom_audio_data=arguments.prepare_custom_audio_data,
             save_preprocessed_data=arguments.save_preprocessed_data,
             output_dir=Path(arguments.output_dir),
             training_strategy=arguments.training_strategy)

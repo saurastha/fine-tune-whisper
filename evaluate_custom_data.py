@@ -30,7 +30,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.is_data_prepare_custom_audio_dataraw:
+    if args.prepare_custom_audio_data:
         data = prepare_custom_data(data_path=args.custom_audio_data_path, save_path=None, eval=True)
     else:
         data = load_from_disk(args.custom_data_path)
