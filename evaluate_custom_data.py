@@ -38,7 +38,7 @@ def main():
     if args.prepare_custom_audio_data == 'True':
         data = prepare_custom_data(data_path=args.custom_audio_data_path, save_path=None, eval=True)
     else:
-        data = load_from_disk(args.custom_data_path)
+        data = load_from_disk(args.custom_audio_data_path)
 
     evaluate_model(model=args.model, language=args.language, task=args.task, data=data)
 
