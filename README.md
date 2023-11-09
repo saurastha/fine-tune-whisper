@@ -64,7 +64,7 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
 5. Run the training pipeline using the `train.py` script.
 
    ```bash
-   !python train.py --model openai/whisper-small --language nepali --hf_data google/fleurs --hf_data_config ne_np --is_custom_data False --custom_data_path None --prepare_custom_data False --save_preprocessed_data True --output_dir outputs/ --training_strategy epoch
+   !python train.py --model openai/whisper-small --language nepali --hf_dataset_id google/fleurs --hf_dataset_config ne_np --is_custom_audio_data False --custom_audio_data_path None --prepare_custom_audio_data False --save_preprocessed_data True --output_dir outputs/ --training_strategy epoch
    ```
 
     - `--model`: Specify the Whisper model architecture, for example, `openai/whisper-small`.
@@ -94,7 +94,7 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
     *To evaluate the model on Hugging Face's dataset, use the following command:*
 
    ```bash
-   !python evaluate_hf_data.py --model openai/whisper-small --language nepali --task transcribe --hf_data google/fleurs --hf_data_config ne_np --split 'test'
+   !python evaluate_hf_data.py --model openai/whisper-small --language nepali --task transcribe --hf_dataset_id google/fleurs --hf_dataset_config ne_np --split 'test'
    ```
 
    - `--model`: Specify the Whisper model architecture, e.g., `openai/whisper-small`.
@@ -163,7 +163,7 @@ data_dir/
 Each sub-folder within the "transcripts" directory contains a `transcript.csv` file. This CSV file has two columns:
 
 1. `id`: This column contains the unique identifier for each audio file, which corresponds to the audio file name.
-2. `transcription`: This column contains the respective transcriptions for the audio files identified by their `id`.
+2. `transcript`: This column contains the respective transcriptions for the audio files identified by their `id`.
 
 ## License
 
