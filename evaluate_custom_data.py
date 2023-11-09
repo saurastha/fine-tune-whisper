@@ -12,16 +12,20 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--model',
+                        type=str,
                         help='Specify the Whisper model (e.g., tiny, small, medium) for evaluation.')
 
     parser.add_argument('--language',
+                        type=str,
                         help='Specify the target language for evaluation.')
 
     parser.add_argument('--task',
+                        type=str,
                         default='transcribe',
                         help='Specify the task to evaluate the data on (e.g., transcribe, translate).')
 
     parser.add_argument('--custom_audio_data_path',
+                        type=Path,
                         help='Specify the path to custom data for evaluation.')
 
     parser.add_argument('--prepare_custom_audio_data',
@@ -31,8 +35,8 @@ def main():
 
     args = parser.parse_args()
 
-    if args.prepare_custom_audio_data:
-        data = prepare_custom_data(data_path=Path(args.custom_audio_data_path), save_path=None, eval=True)
+    if args.prepare_custom_audio_data == 'True':
+        data = prepare_custom_data(data_path=args.custom_audio_data_path, save_path=None, eval=True)
     else:
         data = load_from_disk(args.custom_data_path)
 
