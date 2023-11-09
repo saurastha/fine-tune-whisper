@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 from datasets import load_from_disk
 from finetune.engine.prep_custom_data import prepare_custom_data
 from finetune.engine.eval_engine import evaluate_model
@@ -31,7 +32,7 @@ def main():
     args = parser.parse_args()
 
     if args.prepare_custom_audio_data:
-        data = prepare_custom_data(data_path=args.custom_audio_data_path, save_path=None, eval=True)
+        data = prepare_custom_data(data_path=Path(args.custom_audio_data_path), save_path=None, eval=True)
     else:
         data = load_from_disk(args.custom_data_path)
 

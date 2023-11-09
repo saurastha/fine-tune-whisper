@@ -91,7 +91,7 @@ def prepare_custom_data(data_path: Path, save_path: Union[Path, None], eval: boo
         transcript_dir = data_path / 'transcript'
 
         # Extracting the directories as per the custom data directory structure
-        temp_fol = [item.parts[-1] for item in transcript_dir.iterdir()]
+        temp_fol = [item.parts[-1] for item in transcript_dir.iterdir() if item.is_dir()]
         folders = [item for item in audio_dir.iterdir() if item.parts[-1] in temp_fol]
 
         for fol in tqdm(folders):
