@@ -47,14 +47,14 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
 
 1. Clone the repository to your local machine:
 
-   ```
-   git clone https://github.com/your-username/whisper-finetuning.git
+   ```bash
+   $ git clone https://github.com/your-username/whisper-finetuning.git
    ```
 
 2. Install the necessary dependencies by running:
 
-   ```
-   pip install -r requirements.txt
+   ```bash
+   $ pip install -r requirements.txt
    ```
 
 3. Prepare your custom data. Make sure it follows the structure described in `prep_custom_data.py`.
@@ -64,7 +64,7 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
 5. Run the training pipeline using the `train.py` script.
 
    ```bash
-   !python train.py --model openai/whisper-small --language nepali --hf_dataset_id google/fleurs --hf_dataset_config ne_np --is_custom_audio_data False --custom_audio_data_path None --prepare_custom_audio_data False --save_preprocessed_data True --output_dir outputs/ --training_strategy epoch
+   $ python train.py --model openai/whisper-small --language nepali --hf_dataset_id google/fleurs --hf_dataset_config ne_np --is_custom_audio_data False --custom_audio_data_path None --prepare_custom_audio_data False --save_preprocessed_data True --output_dir outputs/ --training_strategy epoch
    ```
 
     - `--model`: Specify the Whisper model architecture, for example, `openai/whisper-small`.
@@ -94,7 +94,7 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
     *To evaluate the model on Hugging Face's dataset, use the following command:*
 
    ```bash
-   !python evaluate_hf_data.py --model openai/whisper-small --language nepali --task transcribe --hf_dataset_id google/fleurs --hf_dataset_config ne_np --split 'test'
+   $ python evaluate_hf_data.py --model openai/whisper-small --language nepali --task transcribe --hf_dataset_id google/fleurs --hf_dataset_config ne_np --split 'test'
    ```
 
    - `--model`: Specify the Whisper model architecture, e.g., `openai/whisper-small`.
@@ -112,7 +112,7 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
     *To evaluate the model on custom data, use the following command:*
     
     ```bash
-   !python evaluate_custom_data.py --model openai/whisper-small --language nepali --task transcribe --custom_audio_data_path path_to_custom_audio_data --prepare_custom_audio_data True
+   $ python evaluate_custom_data.py --model openai/whisper-small --language nepali --task transcribe --custom_audio_data_path path_to_custom_audio_data --prepare_custom_audio_data True
     ```
     - `--model`: Specify the Whisper model architecture, e.g., `openai/whisper-small`.
 
@@ -126,7 +126,7 @@ To use this repository for fine-tuning the Whisper model, follow these steps:
 
 7. Utilize the `transcribe.py` script to generate transcripts using the fine-tuned Whisper model.
     ```bash
-   !python transcribe.py --filepath list_of_audio_files_to_be_transcribed --model openai/whisper-small --language nepali --task transcribe
+   $ python transcribe.py --filepath list_of_audio_files_to_be_transcribed --model openai/whisper-small --language nepali --task transcribe
     ```
     - `--model`: Specify the Whisper model architecture, e.g., `openai/whisper-small`.
 
