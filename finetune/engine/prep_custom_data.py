@@ -106,7 +106,7 @@ def prepare_custom_data(data_path: Path, save_path: Union[Path, None], eval: boo
 
             audio_transcript_map = dict()
 
-            for audio_id, text in transcript[['id', 'transcript']].values:
+            for audio_id, text in transcript[['id', 'transcription']].values:
                 check_id = str(fol / audio_id.strip())
                 if check_id in audios:
                     audio_transcript_map[check_id] = text
