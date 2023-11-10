@@ -95,7 +95,10 @@ def prepare_custom_data(data_path: Path, save_path: Union[Path, None], eval: boo
         folders = [item for item in audio_dir.iterdir() if item.parts[-1] in temp_fol]
 
         for fol in tqdm(folders):
-            audios = list(map(str, fol.glob('*.wav'))) + list(map(str, fol.glob('*.mp3')))
+            if eval:
+                audios = list(map(str, fol.glob('*.wav'))) + list(map(str, fol.glob('*.mp3')))
+            else:
+                audios = list(map(str, fol.glob('*.wav')))
 
             # Get transcription
             transcript_path = transcript_dir / fol.parts[-1] / 'transcript.csv'
