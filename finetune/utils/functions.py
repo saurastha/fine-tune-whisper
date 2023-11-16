@@ -68,3 +68,24 @@ def split_data(data, num_splits: int, test_size: float = 0.05, val_size: float =
             'validation': train_val['test']})
 
         return data_split
+
+
+def update_vocabulary(data, processor, processor_save_path):
+    print('Adding new tokens to the vocabulary')
+    corpus = data['train']['transcription'] + data['validation']['transcription']
+
+    all_tokens = []
+    for sent in corpus:
+        all_tokens.extend(tok for tok in sent.split())
+
+    old_vocab = processor.tokenizer.get_vocab()
+    new_tokens = list(set(all_tokens) - set(old_vocab.keys()))
+
+    # add the tokens to the tokenizer vocabulary
+    processor.tokenizer.add_tokens(new_tokens)
+
+    processor.save_pretrained(os.path.join(processor_save_path, 'whisper-processor'))
+
+    return processor
+
+

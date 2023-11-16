@@ -8,7 +8,8 @@ from typing import Any, Dict, List, Union
 import evaluate
 from datasets import load_from_disk
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
-from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer, WhisperProcessor, WhisperForConditionalGeneration
+from transformers import (Seq2SeqTrainingArguments, Seq2SeqTrainer, WhisperProcessor, WhisperTokenizer,
+                          WhisperFeatureExtractor, WhisperForConditionalGeneration)
 
 from finetune.utils.functions import create_directories, get_size
 from finetune.engine.data_setup import preprocess
@@ -93,6 +94,9 @@ def train(args):
         return {"wer_ortho": wer_ortho, "wer": wer}
 
     model = WhisperForConditionalGeneration.from_pretrained(args.model)
+    # tokenizer = WhisperTokenizer.from_pretrained(args.model, language=args.language, task="transcribe")
+    # feature_extractor = WhisperFeatureExtractor.from_pretrained(args.model)
+
     processor = WhisperProcessor.from_pretrained(args.model, language=args.language, task='transcribe')
     metric = evaluate.load('wer')
     normalizer = BasicTextNormalizer()
@@ -115,27 +119,30 @@ def train(args):
             print(f'\nProcessed data already exists of size: {processed_data_size}')
 
         data = load_from_disk(str(preprocessed_data_path))
+        updated_processor = WhisperProcessor.from_pretrained(f'{args.output_dir}/whisper-processor')
 
     else:
         # Load Hugging Face dataset
         if not args.is_custom_audio_data:
-            data = preprocess(data_source=args.hf_dataset_id,
-                              hf_dataset_config=args.hf_dataset_config,
-                              processor=processor)
+            data, updated_processor = preprocess(data_source=args.hf_dataset_id,
+                                                 hf_dataset_config=args.hf_dataset_config,
+                                                 processor=processor)
         else:
             # Load custom data
             custom_data_save_path = args.output_dir / 'custom_data'
-            data = preprocess(data_source=args.custom_audio_data_path,
-                              processor=processor,
-                              is_custom_audio_data=True,
-                              prepare_custom_audio_data=args.prepare_custom_audio_data,
-                              custom_audio_data_save_path=custom_data_save_path)
+            data, updated_processor = preprocess(data_source=args.custom_audio_data_path,
+                                                 processor=processor,
+                                                 is_custom_audio_data=True,
+                                                 prepare_custom_audio_data=args.prepare_custom_audio_data,
+                                                 custom_audio_data_save_path=custom_data_save_path)
 
         if args.save_preprocessed_data:
             create_directories([preprocessed_data_path])
             data.save_to_disk(preprocessed_data_path)
 
-    data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
+    model.resize_token_embeddings(len(updated_processor.tokenizer))
+
+    data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=updated_processor)
 
     # Defining training arguments
     if args.training_strategy == 'epoch':
@@ -193,10 +200,8 @@ def train(args):
         eval_dataset=data["validation"],
         data_collator=data_collator,
         compute_metrics=compute_metrics,
-        tokenizer=processor
+        tokenizer=updated_processor
     )
-
-    processor.save_pretrained(os.path.join(args.output_dir, 'whisper-processor'))
 
     print('Training in progress......')
     trainer.train()

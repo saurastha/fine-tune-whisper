@@ -6,10 +6,12 @@ processing audio, and filtering based on length constraints.
 """
 
 from pathlib import Path
+from typing import Tuple
 from datasets import Audio, load_dataset, load_from_disk, Dataset
 from finetune.engine.prep_custom_data import prepare_custom_data
 from finetune.utils.functions import split_data
 from finetune.constant.training_args import *
+from finetune.utils.functions import update_vocabulary
 
 
 def load_hf_data(hf_dataset_id: str, hf_dataset_config: str = None):
@@ -36,7 +38,7 @@ def load_hf_data(hf_dataset_id: str, hf_dataset_config: str = None):
 
 
 def preprocess(data_source: str, processor, hf_dataset_config: str = None, is_custom_audio_data: bool = False,
-               prepare_custom_audio_data: bool = False, custom_audio_data_save_path: Path = None) -> Dataset:
+               prepare_custom_audio_data: bool = False, custom_audio_data_save_path: Path = None) -> Tuple:
     """
         Preprocess data for training or evaluation.
 
@@ -56,7 +58,7 @@ def preprocess(data_source: str, processor, hf_dataset_config: str = None, is_cu
     def prepare_dataset(example):
         audio = example['audio']
 
-        example = processor(
+        example = updated_processor(
             audio=audio['array'],
             sampling_rate=audio['sampling_rate'],
             text=example['transcription'],
@@ -91,6 +93,8 @@ def preprocess(data_source: str, processor, hf_dataset_config: str = None, is_cu
     # resampling the audio to the sampling rate expected by the model
     data = data.cast_column("audio", Audio(sampling_rate=sampling_rate))
 
+    updated_processor = update_vocabulary(data, processor, custom_audio_data_save_path.parent)
+
     data['train'] = data['train'].map(
         prepare_dataset, remove_columns=data.column_names['train'], num_proc=1
     )
@@ -122,7 +126,7 @@ def preprocess(data_source: str, processor, hf_dataset_config: str = None, is_cu
 
     print('######### Data Preprocessing Finished #########')
 
-    return data
+    return data, updated_processor
 
 
 def is_audio_in_length_range(length: float) -> bool:
