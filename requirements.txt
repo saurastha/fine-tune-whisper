@@ -13,4 +13,5 @@ librosa
 ensure
 python-box
 pytube
+ffmpeg-python
 -e.
